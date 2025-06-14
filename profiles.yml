@@ -1,0 +1,12 @@
+portfolio_tracker:
+  outputs:
+    local_postgres:
+      dbname: postgres
+      host: localhost
+      pass: postgres
+      port: 5432
+      schema: public
+      threads: 1
+      type: postgres
+      user: postgres
+  target: local_postgres

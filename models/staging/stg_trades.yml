@@ -1,0 +1,62 @@
+version: 2
+
+models:
+  - name: stg_trades
+    description: >
+      Staging model for trade data. This model cleans and standardizes raw trade records
+      before they are used in downstream analytics.
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "length(customer_account_fk) = 37"
+    columns:
+      - name: trade_pk
+        description: Unique identifier for each trade.
+        tests:
+          - not_null
+          - unique
+
+      - name: customer_account_fk
+        description: Foreign key referencing the customer account associated with the trade.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customer_accounts')
+              field: customer_account_pk
+
+      - name: trade_side
+        description: Indicates whether the trade is a buy or sell.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['buy', 'sell']
+      
+      - name: trade_instrument_fk
+        description: ISIN code for the financial instrument being traded.
+        tests:
+          - not_null
+          - test_isin_format
+        # Note: instruments_id_pk should be defined in a separate model, e.g. stg_instruments - If needed, the data can be added to seed, has not been done now.
+
+      - name: trade_quantity
+        description: The quantity of the shares traded.
+        tests:
+          - not_null
+          - test_valid_numeric_values_format
+
+      - name: trade_price
+        description: The price at which the instrument was traded.
+        tests:
+          - not_null
+          - test_valid_numeric_values_format
+
+      - name: trade_amount
+        description: The total amount of the trade, calculated as quantity * price.
+        tests:
+          - not_null
+          - test_valid_numeric_values_format
+
+      - name: trade_created_dt
+        description: The timestamp when the trade was created.
+        tests:
+          - not_null
+          - test_no_future_dates

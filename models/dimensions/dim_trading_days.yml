@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: dim_trading_days
+    description: >
+      This model generates a date spine for trading days starting from the seed date stated in the dbt_project.yml file
+      to the maximum trade creation date in the staging trades table.
+      This model is used to ensure that all trading days are represented in the fact table.
+    columns:
+      - name: trading_day_dt
+        description: The date of the trading day.
+        tests:
+          - not_null
+          - unique

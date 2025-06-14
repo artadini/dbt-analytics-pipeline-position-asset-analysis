@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: int_price_snapshots
+    description: >
+      Intermediate model for price snapshots. Cleans, transforms, and standardizes raw price snapshot data for downstream consumption.
+      This model ensures each price snapshot is associated with a valid instrument and timestamp, and that price values are numeric and properly formatted.
+    columns:
+      - name: price_snapshots_instrument_fk
+        description: Foreign key referencing the instrument for which the price snapshot is taken.
+        tests:
+          - not_null
+
+      - name: price_snapshots_price
+        description: The price of the instrument at the time of the snapshot, as a numeric value.
+        tests:
+          - not_null
+
+      - name: price_snapshots_currency
+        description: The currency of the price value, typically a 3-letter ISO code.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['EUR']
+
+      - name: price_snapshots_dt
+        description: Date when the price snapshot was taken.
+        tests:
+          - not_null

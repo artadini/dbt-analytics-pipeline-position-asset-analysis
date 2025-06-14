@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: mart_customer_daily_holdings
+    description: Daily snapshot of customer holdings, including balances and related attributes.
+    # Test to ensure data consistency and integrity
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "position_value = position_quantity * price_snapshots_price"
+    columns:
+      - name: trading_day_dt
+        description: Date of the trading day.
+        tests:
+          - not_null
+
+      - name: customer_account_fk
+        description: Unique identifier for the customer account.
+        tests:
+          - not_null
+
+      - name: trade_instrument_fk
+        description: Unique identifier for the trade instrument.
+        tests:
+          - not_null
+
+      - name: position_quantity
+        description: Quantity of the position held.
+
+      - name: price_snapshots_price
+        description: Price of the instrument at the time of the snapshot.
+        tests:
+          - not_null
+
+      - name: price_snapshots_currency
+        description: Currency of the price value, typically a 3-letter ISO code.
+        tests:
+          - not_null
+
+      - name: position_value
+        description: Total value of the position (quantity * price).

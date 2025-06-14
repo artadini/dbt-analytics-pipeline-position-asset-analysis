@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: stg_customer_accounts
+    description: Staging model for customer accounts, cleans and prepares raw customer account data for downstream models.
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "length(customer_account_pk) = 37"
+      - dbt_utils.expression_is_true:
+          expression: "length(customer_fk) = 36"
+    columns:
+      - name: customer_account_pk
+        description: Unique identifier for the customer account.
+        tests:
+          - not_null
+          - unique
+
+      - name: customer_fk
+        description: Unique identifier for the customer associated with the account.
+        tests:
+          - not_null
+
+      - name: partner_fk
+        description: Unique identifier for the partner associated with the customer account.
+        tests:
+          - not_null

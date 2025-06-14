@@ -1,0 +1,68 @@
+version: 2
+
+models:
+  - name: int_clean_trades
+    description: >
+      Intermediate cleaned trades model. Contains validated and standardized trade data for downstream processing.
+      Each row represents a single trade event with all relevant attributes cleaned and formatted.
+    columns:
+      - name: trade_pk
+        description: Primary key for the trade record.
+        tests:
+          - not_null
+          - unique
+
+      - name: customer_account_fk
+        description: Foreign key referencing the customer account associated with the trade.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customer_accounts')
+              field: customer_account_pk
+
+      - name: trade_instrument_fk
+        description: Foreign key referencing the traded instrument.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('int_price_snapshots')
+              field: price_snapshots_instrument_fk
+
+      - name: trade_side
+        description: Indicates whether the trade was a 'buy' or 'sell'.
+        tests:
+          - not_null
+
+      - name: trade_created_dt
+        description: Date when the trade was created.
+        tests:
+          - not_null
+
+      - name: trade_quantity
+        description: Quantity of the instrument traded.
+        tests:
+          - not_null
+
+      - name: trade_price
+        description: Price per unit of the instrument traded.
+        tests:
+          - not_null
+
+      - name: trade_price_currency
+        description: Currency of the trade price, typically a 3-letter ISO code.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['EUR']
+
+      - name: trade_amount
+        description: Total amount of the trade (trade_quantity * trade_price).
+        tests:
+          - not_null
+
+      - name: trade_amount_currency
+        description: Currency of the trade amount, typically a 3-letter ISO code.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['EUR']

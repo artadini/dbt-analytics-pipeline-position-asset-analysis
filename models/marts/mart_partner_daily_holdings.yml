@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: mart_partner_daily_holdings
+    description: Daily snapshot of partner holdings, including total positions and values per instrument.
+    columns:
+      - name: trading_day_dt
+        description: Date of the trading day.
+        tests:
+          - not_null
+
+      - name: partner_fk
+        description: Unique identifier for the partner.
+        tests:
+          - not_null
+
+      - name: trade_instrument_fk
+        description: Unique identifier for the trade instrument.
+        tests:
+          - not_null
+
+      - name: total_position_quantity
+        description: Total quantity of the position held by the partner for the instrument.
+        tests:
+          - not_null
+
+      - name: total_position_value
+        description: Total value of the position (quantity * price) held by the partner for the instrument.
+        tests:
+          - not_null

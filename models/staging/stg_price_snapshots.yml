@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: stg_price_snapshots
+    description: Staging model for price snapshots data.
+    columns:
+      - name: price_snapshots_instrument_fk
+        description: Foreign key referencing the instrument for which the price snapshot is taken.
+        tests:
+          - not_null
+          - test_isin_format
+
+      - name: price_snapshots_price
+        description: The price of the instrument at the time of the snapshot.
+        tests:
+          - not_null
+          - test_valid_numeric_values_format
+
+      - name: price_snapshots_dt
+        description: The timestamp when the price snapshot was taken.
+        tests:
+          - not_null
+          - test_no_future_dates

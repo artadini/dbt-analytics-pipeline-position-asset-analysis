@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: int_daily_positions
+    description: >
+      Intermediate model providing the daily position quantity for each customer and instrument.
+      Ensures every trading day is represented for every customer and instrument, with forward-filled positions.
+    columns:
+      - name: trading_day_dt
+        description: Date of the trading day.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_trading_days')
+              field: trading_days_dt
+
+      - name: customer_account_fk
+        description: Foreign key referencing the customer account.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customer_accounts')
+              field: customer_account_pk
+
+      - name: trade_instrument_fk
+        description: Foreign key referencing the traded instrument.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('int_price_snapshots')
+              field: price_snapshots_instrument_fk
+
+      - name: position_quantity
+        description: The cumulative quantity of the instrument held by the customer as of the trading day.
+        tests:
+          - not_null

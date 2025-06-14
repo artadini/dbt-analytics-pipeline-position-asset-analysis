@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: int_filled_price_snapshots
+    description: >
+      Intermediate model that provides a forward-filled daily price snapshot for each instrument.
+      Ensures every trading day and instrument combination has a price, carrying forward the last known value when missing.
+    columns:
+      - name: trading_day_dt
+        description: Date of the trading day.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_trading_days')
+              field: trading_day_dt
+
+      - name: price_snapshots_instrument_fk
+        description: Foreign key referencing the instrument for which the price snapshot is provided.
+        tests:
+          - not_null
+
+      - name: price_snapshots_price
+        description: The forward-filled price of the instrument as of the trading day.
+        tests:
+          - not_null
+
+      - name: price_snapshots_currency
+        description: The currency of the price value, typically a 3-letter ISO code.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['EUR']

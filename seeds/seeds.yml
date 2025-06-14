@@ -1,0 +1,45 @@
+version: 2
+
+seeds:
+  - name: customer_accounts
+    columns:
+      - name: customer_account_id
+      - name: customer_id
+      - name: partner_id
+    config:
+      column_types:
+        customer_account_id: text
+        customer_id: text
+        partner_id: text
+
+  - name: trades
+    columns:
+      - name: id
+      - name: customer_account_id
+      - name: side
+      - name: instrument
+      - name: quantity
+      - name: price
+      - name: amount
+      - name: created_at
+    config:
+      column_types:
+        id: text
+        customer_account_id: text
+        side: text
+        instrument: text
+        quantity: text
+        price: text
+        amount: text
+        created_at: date
+
+  - name: price_snapshots
+    columns:
+      - name: instrument
+      - name: price
+      - name: timestamp
+    config:
+      column_types:
+        instrument: text
+        price: text
+        timestamp: date
