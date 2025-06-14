@@ -1,4 +1,4 @@
-# dbt project: Customer positions and assets analysis
+# dbt project: Anlytics pipeline for positions and assets analysis over time
 
 ## Introduction
 
