@@ -89,12 +89,14 @@ I have used the following formula to handle numeric values, because I have aimed
 * (-9,3) = -0.009
 
 ## Installation and Run
+> **WARNING**: Run `dbt deps` to install needed packages as project has dependencies to it.
 
 ```bash
 docker-compose up -d
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+dbt deps
 dbt seed
 dbt run
 dbt test
