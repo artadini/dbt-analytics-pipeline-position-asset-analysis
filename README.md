@@ -2,13 +2,39 @@
 
 ## Introduction
 
-This project demonstrates my ability to **design, implement and maintain a scalable and flexible ELT pipeline with dbt and Postgres**. The main objective here is to track **customer positions and portfolio values over time** and to produce daily snapshots — even for days without trades — to enable accurate financial and operational analysis.
+This project demonstrates my ability to **design, implement and maintain a scalable and flexible analytics pipeline with dbt and Postgres**. The main objective here is to track **customer positions and portfolio values over time** and to produce daily snapshots, even for days without trades, to enable accurate financial and operational analysis.
 
 This repository serves as **a portfolio piece**, reflecting my coding style, architecture decisions and best practices when designing scalable data pipelines.
 
+### This is the high-level dbt architecture chosen
+
+```
+staging: +materialized: view
+intermediate: +materialized: view
+dimensions: +materialized: view
+marts: +materialized: table
+
+models/
+├── dimensions/
+│   └── dim_trading_days.sql
+├── intermediate/
+│   ├── int_clean_trades.sql
+│   ├── int_daily_positions.sql
+│   ├── int_filled_price_snapshots
+│   └── int_price_snapshots.sql
+├── marts/
+│   ├── mart_customer_daily_holdings.sql
+│   └── mart_partner_daily_holdings.sql
+└── staging/
+    ├── stg_customer_accounts.sql
+    ├── stg_trades.sql
+    └── stg_price_snapshots.sql
+```
+
 ## Project overview
 
-I aimed to track how customer & partner positions change over time and monitor the evolution of total Assets under Custody (AuC) daily for a fictional company. The pipeline parses and transforms raw trades and price snapshots into daily positions and portfolio values.
+I aimed to track how customer & partner positions change over time and monitor the evolution of total Assets under Custody (AuC) daily for a fictional company so that they can track the performance of their customers on a daily basis and understand the customer's customers trading behavior. <br>
+The pipeline parses and transforms raw trades and price snapshots into daily positions and portfolio values.
 
 It performs:
 
@@ -141,27 +167,106 @@ In summary:
 
     DRY, reusable, forward-filling
 
-```
-staging: +materialized: view
-intermediate: +materialized: view
-dimensions: +materialized: view
-marts: +materialized: table
+### ERD
 
-models/
-├── dimensions/
-│   └── dim_trading_days.sql
-├── intermediate/
-│   ├── int_clean_trades.sql
-│   ├── int_daily_positions.sql
-│   ├── int_filled_price_snapshots
-│   └── int_price_snapshots.sql
-├── marts/
-│   ├── mart_customer_daily_holdings.sql
-│   └── mart_partner_daily_holdings.sql
-└── staging/
-    ├── stg_customer_accounts.sql
-    ├── stg_trades.sql
-    └── stg_price_snapshots.sql
+```mermaid
+erDiagram
+
+    %% Base dimension tables
+    DIM_TRADING_DAYS {
+        date trading_day_dt
+    }
+
+    STG_CUSTOMER_ACCOUNTS {
+        int customer_account_pk
+        int partner_fk
+    }
+
+    STG_TRADES {
+        int trade_pk
+        int customer_account_fk
+        int trade_instrument_fk
+        string trade_side
+        datetime trade_created_dt
+        string trade_quantity
+        string trade_price
+        string trade_amount
+    }
+
+    STG_PRICE_SNAPSHOTS {
+        int price_snapshots_instrument_fk
+        string price_snapshots_price
+        date price_snapshots_dt
+    }
+
+    %% Intermediate models
+    INT_CLEAN_TRADES {
+        int trade_pk
+        int customer_account_fk
+        int trade_instrument_fk
+        string trade_side
+        datetime trade_created_dt
+        float trade_quantity
+        float trade_price
+        string trade_price_currency
+        float trade_amount
+        string trade_amount_currency
+    }
+
+    INT_DAILY_POSITIONS {
+        date trading_day_dt
+        int customer_account_fk
+        int trade_instrument_fk
+        float position_quantity
+    }
+
+    INT_PRICE_SNAPSHOTS {
+        int price_snapshots_instrument_fk
+        float price_snapshots_price
+        string price_snapshots_currency
+        date price_snapshots_dt
+    }
+
+    INT_FILLED_PRICE_SNAPSHOTS {
+        date trading_day_dt
+        int price_snapshots_instrument_fk
+        float price_snapshots_price
+        string price_snapshots_currency
+    }
+
+    %% Mart models
+    MART_CUSTOMER_DAILY_HOLDINGS {
+        date trading_day_dt
+        int customer_account_fk
+        int trade_instrument_fk
+        float position_quantity
+        float price_snapshots_price
+        string price_snapshots_currency
+        float position_value
+    }
+
+    MART_PARTNER_DAILY_HOLDINGS {
+        date trading_day_dt
+        int partner_fk
+        int trade_instrument_fk
+        string price_snapshots_currency
+        float total_position_quantity
+        float total_position_value
+    }
+
+    %% Relationships
+    STG_TRADES ||--o{ INT_CLEAN_TRADES : "trade_pk"
+    STG_CUSTOMER_ACCOUNTS ||--o{ STG_TRADES : "customer_account_fk"
+    STG_CUSTOMER_ACCOUNTS ||--o{ MART_PARTNER_DAILY_HOLDINGS : "partner_fk"
+    INT_CLEAN_TRADES ||--o{ INT_DAILY_POSITIONS : "customer_account_fk"
+    INT_CLEAN_TRADES ||--o{ INT_DAILY_POSITIONS : "trade_instrument_fk"
+    DIM_TRADING_DAYS ||--o{ INT_DAILY_POSITIONS : "trading_day_dt"
+    DIM_TRADING_DAYS ||--o{ INT_FILLED_PRICE_SNAPSHOTS : "trading_day_dt"
+    STG_PRICE_SNAPSHOTS ||--o{ INT_PRICE_SNAPSHOTS : "price_snapshots_instrument_fk"
+    INT_PRICE_SNAPSHOTS ||--o{ INT_FILLED_PRICE_SNAPSHOTS : "price_snapshots_instrument_fk"
+    INT_DAILY_POSITIONS ||--o{ MART_CUSTOMER_DAILY_HOLDINGS : "customer_account_fk"
+    INT_FILLED_PRICE_SNAPSHOTS ||--o{ MART_CUSTOMER_DAILY_HOLDINGS : "trade_instrument_fk"
+    MART_CUSTOMER_DAILY_HOLDINGS ||--o{ MART_PARTNER_DAILY_HOLDINGS : "customer_account_fk"
 ```
 
 ### Main transformations
